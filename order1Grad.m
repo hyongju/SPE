@@ -39,7 +39,7 @@ while(cst2 > cst1)
     for i =1:size(pos,1)
         pos_tmp(i,:) = pos(i,:) - alph*sum4(i,:);
     end
-    [~,v_1_r_1,~,~] = polybnd_voronoi(pos_tmp,bnd_pnts);
+    [~,v_1_r_1,~,~] = pVoronoi(pos_tmp,bnd_pnts);
     cst2 = order1Cost(v_1_r_1,bnd_pnts,p2,pos_tmp,n1,coef,adv,type,prob_int);   
 end
 for i = 1:size(pos,1)
