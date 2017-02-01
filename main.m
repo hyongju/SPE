@@ -4,12 +4,12 @@
 clear all;close all;clc
 
 %% 
-nRuns = 2;  % total number of runs
+nRuns = 11;  % total number of runs
 n = 10;         % number of robots
 orderK = n;    % order k, available options, 1, 2, n
 fixed = 0;      % robots: will move (1), will not move (0) 
 d = 2;          % dimension of the space  
-nGrid = 20;  % number of grids
+nGrid = 40;  % number of grids
 errTol = 0.003;
 % generate halton sequence 
 hSet1 = haltonset(d,'Skip',1e3,'Leap',1e2);
@@ -28,8 +28,8 @@ varInfo = 0.5;     % how noisy the sensor is (e.g., 0: perfect)
 squareQ = [0 0;1 0;1 1;0 1];   % square worksapce
 bndIdx = convhull(squareQ);   
 bndPnts = squareQ(bndIdx,:);
-fault = [1];                 % faulty robots' indice 
-nsampPos = 1000;                  % number of samples (for target locations)
+fault = [3 8];                 % faulty robots' indice 
+nsampPos = 6000;                  % number of samples (for target locations)
 % number of samples for target information state
 nsampInfo = 100;
 sampPosTmp = net(hScrambled1,nsampPos);   % generate quasi-random samples
@@ -179,26 +179,27 @@ for i = 1:curStep
         end
     end
 end
-figure,
+fig5 = figure('position',[100 100 600 600],'Color',[1 1 1]);
 plot(1:curStep,KLDiv(1,1:curStep))
 xlabel('time step')
 ylabel('KL divergence')
-
+set(gca,'FontSize',14')
 % plot positions changes
 for j = 1:size(pos,1)
     for i = 1:curStep
         posPlt{j}(i,:) = savData{i,1}(j,:);
     end
 end
-figure,
+fig6 = figure('position',[100 100 600 600],'Color',[1 1 1]);
 for j = 1:size(pos,1)
     plot(posPlt{j}(:,1),posPlt{j}(:,2),'o-');
     hold on;
 end
 axis([0 1 0 1]);
 axis('square');
+set(gca,'FontSize',14')
 
-figure,
+fig7 = figure('position',[100 100 600 600],'Color',[1 1 1]);
 for j = 1:size(pos,1)
     plot(1:curStep,posPlt{j}(:,1),'-');
     hold on;
@@ -212,5 +213,15 @@ for j = 1:size(pos,1)
 end
 xlabel('time step');
 ylabel('Y');
+set(gca,'FontSize',14')
 
 
+
+ hold on;plot(pos(3,1)*nGrid,pos(3,2)*nGrid,'-o',...
+                'LineWidth',2,...
+                'MarkerEdgeColor','y',...
+                'MarkerSize',16)
+ hold on;plot(pos(8,1)*nGrid,pos(8,2)*nGrid,'-o',...
+                'LineWidth',2,...
+                'MarkerEdgeColor','y',...
+                'MarkerSize',16)
