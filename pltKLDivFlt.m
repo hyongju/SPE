@@ -24,14 +24,14 @@ comp = [0.179919282	0.274000641	0.341709108	0.321169274	0.35964163	0.22699801	0.
 % 'g',x,y2,'b--o',x,y3,'c*'
 
 h00 = figure('position',[100 100 600 600],'Color',[1 1 1]);
-plot(0:size(comp,2)-1,comp(1,:),'s-');hold on;
-plot(0:size(comp,2)-1,comp(2,:),'r--d');hold on;
-plot(0:size(comp,2)-1,comp(3,:),'b*-');hold on;
+plot(0:size(comp,2)-1,comp(1,:),'s-','MarkerSize',10,'LineWidth',2);hold on;
+plot(0:size(comp,2)-1,comp(2,:),'r--d','MarkerSize',10,'LineWidth',2);hold on;
+plot(0:size(comp,2)-1,comp(3,:),'g*-','MarkerSize',10,'LineWidth',2);hold on;
 
 legend('k=1','k=2','k=10');
 xlabel('time step');
 ylabel('K-L divergence');
-set(gca,'FontSize',14);
+set(gca,'FontSize',24,'LineWidth',2);
 % 
 % 
 % h01 = figure('position',[100 100 600 600],'Color',[1 1 1]);

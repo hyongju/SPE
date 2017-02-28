@@ -35,7 +35,7 @@ nsampInfo = 100;
 sampPosTmp = net(hScrambled1,nsampPos);   % generate quasi-random samples
 % consider points inside the boundary
 sampPos = sampPosTmp(inhull(sampPosTmp,bndPnts),:);  
-
+effRad = 0.5
 %% generate ground truth distribution
 % mixture of gausians
 posPeaks = [0.2785 0.9649;
@@ -61,9 +61,9 @@ xlabel('X');ylabel('Y');zlabel('Target distribution');
 
 normExpWgt = gridDisplay([sampPos(:,1) sampPos(:,2) gTruth(:)],nGrid,max(gTruth));
 fig1 = figure('position',[100 100 600 600],'Color',[1 1 1]);
-imshow(normExpWgt','InitialMagnification','fit')
+imshow(normExpWgt','InitialMagnification','fit','Colormap',jet(255))
 hold on;
-plot(posPeaks(:,1)*nGrid,(posPeaks(:,2))*nGrid,'s','MarkerFaceColor','w','MarkerEdgeColor','r','MarkerSize',10);hold on;
+plot(posPeaks(:,1)*nGrid,(posPeaks(:,2))*nGrid,'s','MarkerFaceColor','w','MarkerEdgeColor','k','MarkerSize',16);hold on;
 
 hSet2 = haltonset(1,'Skip',1e3,'Leap',1e2);
 hScrambled2 = scramble(hSet2,'RR2');
@@ -77,8 +77,8 @@ particleWgt = ones(1,size(sampPos,1))*mean(gTruth);
 
 normExpWgt = gridDisplay([sampPos particleWgt'],nGrid,max(gTruth));
 fig3 = figure('position',[100 100 600 600],'Color',[1 1 1]);
-imshow(1-normExpWgt','InitialMagnification','fit');hold on;
-plot(pos(:,1)*nGrid,pos(:,2)*nGrid,'p','MarkerFaceColor','w','MarkerEdgeColor','c','MarkerSize',10);hold on;
+imshow(1-normExpWgt','InitialMagnification','fit','Colormap',jet(255));hold on;
+plot(pos(:,1)*nGrid,pos(:,2)*nGrid,'p','MarkerFaceColor','w','MarkerEdgeColor','k','MarkerSize',16);hold on;
 
 savData{1,1} = pos;
 savData{1,3} = sampPos;
@@ -161,9 +161,9 @@ for curStep = 2:nRuns
 
     normExpWgt = gridDisplay([sampPos particleWgt'],nGrid,max(particleWgt));
     fig4 = figure('position',[100 100 600 600],'Color',[1 1 1]);
-    imshow(normExpWgt','InitialMagnification','fit');hold on;
-    plot(pos(:,1)*nGrid,pos(:,2)*nGrid,'p','MarkerFaceColor','w','MarkerEdgeColor','c','MarkerSize',10);hold on;
+    imshow(normExpWgt','InitialMagnification','fit','Colormap',jet(255));hold on;
 
+    plot(pos(:,1)*nGrid,pos(:,2)*nGrid,'p','MarkerFaceColor','w','MarkerEdgeColor','c','MarkerSize',10);hold on;
     savData{curStep,1} = pos;
     savData{curStep,3} = sampPos;
     savData{curStep,2} = particleWgt;

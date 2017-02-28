@@ -28,20 +28,20 @@ comp2 = [0.179919282	0.681901439	0.629666867	0.599897117	0.581552299	0.569842773
 % 'g',x,y2,'b--o',x,y3,'c*'
 
 h00 = figure('position',[100 100 600 600],'Color',[1 1 1]);
-plot(0:size(comp,2)-1,comp(1,:),'s-');hold on;
-plot(0:size(comp,2)-1,comp(2,:),'g--d');hold on;
-plot(0:size(comp,2)-1,comp(3,:),'c*-');hold on;
+plot(0:size(comp,2)-1,comp(1,:),'s-','MarkerSize',10,'LineWidth',2);hold on;
+plot(0:size(comp,2)-1,comp(2,:),'g--d','MarkerSize',10,'LineWidth',2);hold on;
+plot(0:size(comp,2)-1,comp(3,:),'c*-','MarkerSize',10,'LineWidth',2);hold on;
 legend('k=1','k=2','k=10');
 xlabel('time step');
 ylabel('K-L divergence');
-set(gca,'FontSize',14);
+set(gca,'FontSize',24,'LineWidth',2);
 
 
 h01 = figure('position',[100 100 600 600],'Color',[1 1 1]);
-plot(0:size(comp2,2)-1,comp2(1,:),'s-');hold on;
-plot(0:size(comp2,2)-1,comp2(2,:),'g--d');hold on;
-plot(0:size(comp2,2)-1,comp2(3,:),'c*-');hold on;
+plot(0:size(comp2,2)-1,comp2(1,:),'s-','MarkerSize',10,'LineWidth',2);hold on;
+plot(0:size(comp2,2)-1,comp2(2,:),'g--d','MarkerSize',10,'LineWidth',2);hold on;
+plot(0:size(comp2,2)-1,comp2(3,:),'c*-','MarkerSize',10,'LineWidth',2);hold on;
 legend('k=1(fixed)','k=2(fixed)','k=10(fixed)');
 xlabel('time step');
 ylabel('K-L divergence');
-set(gca,'FontSize',14);
+set(gca,'FontSize',24,'LineWidth',2);

@@ -2,11 +2,28 @@
 % using Bayesian Approach (MMLE + FIR filter)
 % by Hyongju Park
 clear all;close all;clc
+load('data_46_52.mat');
+k = 0;
+for i = 46:size(TripDataFill,2)
+    k = k+1;
+    posExt{k} = [(TripDataFill{i}(:,4)-bndPnts0(1))/(bndPnts0(2)-bndPnts0(1)) ...
+        (TripDataFill{i}(:,3)-bndPnts0(3))/(bndPnts0(4)-bndPnts0(3))];
+    obserV{k} = TripDataFill{i}(:,6);
+    for j = 1:size(obserV{k},1)
+        if obserV{k}(j) == 3
+           obserV{k}(j) = 1.5;
+        elseif obserV{k}(j) == 4
+            obserV{k}(j) = 0;           
+        end
+    end
+end
+
+
 
 %% 
 nRuns = 11;  % total number of runs
 n = 10;         % number of robots
-orderK = n;    % order k, available options, 1, 2, n
+orderK = 3;    % order k, available options, 1, 2, n
 fixed = 0;      % robots: will move (1), will not move (0) 
 d = 2;          % dimension of the space  
 nGrid = 40;  % number of grids
@@ -21,14 +38,14 @@ pos = 1/4 *(net(hScrambled1,n) -0.25 * ones(n,d)) + 0.25 * ones(n,d);
 
 % random seed
 rng('shuffle')
-varPos = 0.2^2;       % detection function (e.g., 1: large, 0.1: small, relat
+varPos = 0.1^2;       % detection function (e.g., 1: large, 0.1: small, relat
                     % ive to the workspace size)
 varInfo = 0.5;     % how noisy the sensor is (e.g., 0: perfect)
 % boundary of the workspace
 squareQ = [0 0;1 0;1 1;0 1];   % square worksapce
 bndIdx = convhull(squareQ);   
 bndPnts = squareQ(bndIdx,:);
-fault = [3 8];                 % faulty robots' indice 
+fault = [];                 % faulty robots' indice 
 nsampPos = 6000;                  % number of samples (for target locations)
 % number of samples for target information state
 nsampInfo = 100;
@@ -45,7 +62,11 @@ mix1 = mvnpdf(sampPos,posPeaks(1,:),0.05*eye(2));
 mix2 = mvnpdf(sampPos,posPeaks(2,:),0.05*eye(2));
 mix3 = mvnpdf(sampPos,posPeaks(3,:),0.05*eye(2));
 gTruthTmp = mix1 + mix2 + mix3;
-gTruth = gTruthTmp / sum(gTruthTmp);
+% gTruth = gTruthTmp / sum(gTruthTmp);
+
+load('gtruth_46.mat');
+gTruth = sampVal';
+
 
 fig0 = figure('position',[100 100 600 600],'Color',[1 1 1]);
 plot3(sampPos(:,1),sampPos(:,2),gTruth(:),'Marker','.','MarkerSize',1,'LineStyle','none');
@@ -62,49 +83,52 @@ xlabel('X');ylabel('Y');zlabel('Target distribution');
 normExpWgt = gridDisplay([sampPos(:,1) sampPos(:,2) gTruth(:)],nGrid,max(gTruth));
 fig1 = figure('position',[100 100 600 600],'Color',[1 1 1]);
 imshow(normExpWgt','InitialMagnification','fit')
-hold on;
-plot(posPeaks(:,1)*nGrid,(posPeaks(:,2))*nGrid,'s','MarkerFaceColor','w','MarkerEdgeColor','r','MarkerSize',10);hold on;
+% hold on;
+% plot(posPeaks(:,1)*nGrid,(posPeaks(:,2))*nGrid,'s','MarkerFaceColor','w','MarkerEdgeColor','r','MarkerSize',10);hold on;
 
 hSet2 = haltonset(1,'Skip',1e3,'Leap',1e2);
 hScrambled2 = scramble(hSet2,'RR2');
-sampInfo = net(hScrambled2,nsampInfo)*max(gTruth);
+sampInfo = net(hScrambled2,nsampInfo)*1;
 
 % initialize weights...
 prvWgt = 1/nsampInfo  * ones(nsampInfo ,size(sampPos,1));
 
 % save samples...
-particleWgt = ones(1,size(sampPos,1))*mean(gTruth);
+particleWgt = ones(1,size(sampPos,1))*0.5;
 
-normExpWgt = gridDisplay([sampPos particleWgt'],nGrid,max(gTruth));
+normExpWgt = gridDisplay([sampPos particleWgt'],nGrid,1);
 fig3 = figure('position',[100 100 600 600],'Color',[1 1 1]);
-imshow(1-normExpWgt','InitialMagnification','fit');hold on;
-plot(pos(:,1)*nGrid,pos(:,2)*nGrid,'p','MarkerFaceColor','w','MarkerEdgeColor','c','MarkerSize',10);hold on;
+imshow(normExpWgt','InitialMagnification','fit');hold on;
+% plot(pos(:,1)*nGrid,pos(:,2)*nGrid,'p','MarkerFaceColor','w','MarkerEdgeColor','c','MarkerSize',10);hold on;
 
 savData{1,1} = pos;
 savData{1,3} = sampPos;
 savData{1,2} = particleWgt;
 cstPrv = 0;
 diff = 1/eps;
-for curStep = 2:nRuns
+for curStep = 2:12
     curStep
     if fixed == 1
         cst = 0;
     else
-        if norm(diff) > errTol
-            switch(orderK)
-                case 1
-                    [cst,optPos] = ctrlOrder1(pos, sampPos,particleWgt',varPos);
-                case 2
-                    [cst,optPos] = ctrlOrder2(pos, sampPos,particleWgt',varPos);
-                case size(pos,1)
-                    [cst,optPos] = ctrlOrdern(pos, sampPos,particleWgt',varPos);
-                otherwise
-                    error('cannot do that');
-            end
-            pos = optPos;
-            diff = cstPrv - cst(size(cst,2));
-            cstPrv = cst(size(cst,2));
-        end
+%         if norm(diff) > errTol
+%             switch(orderK)
+%                 case 1
+%                     [cst,optPos] = ctrlOrder1(pos, sampPos,particleWgt',varPos);
+%                 case 2
+%                     [cst,optPos] = ctrlOrder2(pos, sampPos,particleWgt',varPos);
+%                 case size(pos,1)
+%                     [cst,optPos] = ctrlOrdern(pos, sampPos,particleWgt',varPos);
+%                 otherwise
+%                     error('cannot do that');
+%             end
+%             pos = optPos;
+%             diff = cstPrv - cst(size(cst,2));
+%             cstPrv = cst(size(cst,2));
+%         end
+        pos = posExt{curStep-1};
+        obs = obserV{curStep-1};
+        cst = 0;
     end
     for i = 1:size(sampPos,1)
         mvnMax = 1*mvnpdf([0 0],[0 0],eye(2)*varPos);
@@ -115,7 +139,10 @@ for curStep = 2:nRuns
                     detectLhd(i)=0;
                 else
                     detectLhd(i) = mvnpdf(sampPos(i,:),pos(idxl(1),:),eye(2)*varPos)/mvnpdf([0 0],[0 0],eye(2)*varPos);
+                    
                 end
+                friend{i} = idxl(1);
+%                 gTruth(i,:) =  obs(idxl(1))/2;
             case 2
                 if ismember(idxl(1), fault)
                     detectLhd(i)= 1 - (1-mvnpdf(sampPos(i,:),pos(idxl(2),:),eye(2)*varPos)/mvnpdf([0 0],[0 0],eye(2)*varPos));
@@ -125,7 +152,8 @@ for curStep = 2:nRuns
                     detectLhd(i)=1-(1-mvnpdf(sampPos(i,:),pos(idxl(2),:),eye(2)*varPos)/mvnpdf([0 0],[0 0],eye(2)*varPos))*...
                         (1-mvnpdf(sampPos(i,:),pos(idxl(1),:),eye(2)*varPos)/mvnpdf([0 0],[0 0],eye(2)*varPos));
                 end
-            case size(pos,1)
+                friend{i} = [idxl(1) idxl(2)];
+            case 3
                 prdTerm = 1;
                 for j = 1:size(pos,1)
                     if ismember(idxl(j),fault)
@@ -136,6 +164,7 @@ for curStep = 2:nRuns
                     end
                 end
                 detectLhd(i)=1-prdTerm;
+                friend{i} = idxl;
         end
     end
     % clear previous weights (robots' previous location has no meaning...)
@@ -144,7 +173,13 @@ for curStep = 2:nRuns
     % findMinDist
     for i = 1:size(sampPos,1)
         for j = 1:length(sampInfo)
-              infoLhd{i}(j)=normpdf(gTruth(i,:),sampInfo(j),max(sampInfo)*varInfo);
+              if ~isempty(find(obs(friend{i},:)))
+                  tmp = find(obs(friend{i},:));
+                  gTruth(i) = obs(tmp(1),:)/2;
+              else
+                  gTruth(i) = 0;
+              end
+              infoLhd{i}(j)=normpdf(gTruth(i),sampInfo(j),max(sampInfo)*varInfo);
         end
     end
 
@@ -170,6 +205,9 @@ for curStep = 2:nRuns
     savData{curStep,4} = cst;
 end
 
+load('gtruth_52.mat');
+gTruth = sampVal;
+
 % K-L Divergence 
 for i = 1:curStep
     KLDiv(i) = 0;
@@ -179,8 +217,8 @@ for i = 1:curStep
         end
     end
 end
-fig5 = figure('position',[100 100 600 600],'Color',[1 1 1]);
-plot(1:curStep,KLDiv(1,1:curStep))
+fig5 = figure('position',[100 100 600 300],'Color',[1 1 1]);
+plot(0:curStep-2,KLDiv(1,2:curStep))
 xlabel('time step')
 ylabel('KL divergence')
 set(gca,'FontSize',14')
